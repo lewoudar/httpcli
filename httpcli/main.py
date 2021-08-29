@@ -20,7 +20,9 @@ from .parameters import AUTH_PARAM
 @click.option('--auth', type=AUTH_PARAM, help='a json string representing authentication information')
 @click.option(
     '--follow-redirects/--no-follow-redirects', ' /-N',
-    help='flag to decide if http redirections must be followed')
+    help='flag to decide if http redirections must be followed',
+    default=None
+)
 @click.pass_context
 def http(context: click.Context, proxy: str, http_version: str, backend: str, auth: Auth, follow_redirects: bool):
     """HTTP CLI"""
@@ -35,15 +37,7 @@ def http(context: click.Context, proxy: str, http_version: str, backend: str, au
         config.auth = auth
     if follow_redirects is not None:
         config.follow_redirects = follow_redirects
-    click.echo(config)
 
-
-@click.command()
-def dummy():
-    click.echo('dummy')
-
-
-http.add_command(dummy)
 
 if __name__ == '__main__':
     http()
