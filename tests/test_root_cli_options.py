@@ -1,7 +1,8 @@
 import click
 
-from httpcli.configuration import Configuration, OAuth2PasswordBearer
+from httpcli.configuration import Configuration
 from httpcli.main import http
+from httpcli.models import OAuth2PasswordBearer
 
 
 @click.command()

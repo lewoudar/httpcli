@@ -1,35 +1,10 @@
 import json
-from typing import Optional, Union, List, Any
+from typing import Optional, Union, Any
+
+from pydantic import BaseSettings, AnyHttpUrl, validator, FilePath
 from typing_extensions import Literal
-from pydantic import BaseSettings, BaseModel, AnyHttpUrl, validator, FilePath
 
-
-class Auth(BaseModel):
-    type: str
-
-
-class UserMixin(BaseModel):
-    username: str
-    password: str
-
-
-class BasicAuth(UserMixin, Auth):
-    type: Literal['basic']
-
-
-class DigestAuth(UserMixin, Auth):
-    type: Literal['digest']
-
-
-class OAuth2(Auth):
-    type: Literal['oauth2']
-    flow: str
-
-
-class OAuth2PasswordBearer(UserMixin, OAuth2):
-    token_url: AnyHttpUrl
-    flow: Literal['password']
-    scopes: List[str] = []
+from .models import BasicAuth, DigestAuth, OAuth2PasswordBearer
 
 
 class Configuration(BaseSettings):

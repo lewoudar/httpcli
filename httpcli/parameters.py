@@ -4,7 +4,8 @@ import typing as t
 import click
 from pydantic import ValidationError, AnyHttpUrl
 
-from .configuration import Configuration, Auth
+from .configuration import Configuration
+from .models import Auth
 from .models import UrlModel
 
 

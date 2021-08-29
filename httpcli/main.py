@@ -2,14 +2,16 @@ from pathlib import Path
 from typing import Optional, Union
 
 import click
+from pydantic import AnyHttpUrl
 
-from .configuration import Configuration, Auth
+from .configuration import Configuration
+from .models import Auth
 from .options import global_cli_options
 
 
 def set_configuration_options(
         config: Configuration,
-        proxy: Optional[str] = None,
+        proxy: Optional[AnyHttpUrl] = None,
         http_version: Optional[str] = None,
         backend: Optional[str] = None,
         auth: Optional[Auth] = None,
@@ -33,7 +35,9 @@ def set_configuration_options(
 @click.group()
 @global_cli_options
 @click.pass_context
-def http(context: click.Context, proxy: str, http_version: str, backend: str, auth: Auth, follow_redirects: bool):
+def http(
+        context: click.Context, proxy: AnyHttpUrl, http_version: str, backend: str, auth: Auth, follow_redirects: bool
+):
     """HTTP CLI"""
     config = context.ensure_object(Configuration)
     set_configuration_options(config, proxy, http_version, backend, auth, follow_redirects, verify=False)
