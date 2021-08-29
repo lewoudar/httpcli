@@ -1,9 +1,8 @@
 from typing import Callable, TypeVar, Any
 
 import click
-from click_params import URL
 
-from .parameters import AUTH_PARAM
+from .parameters import AUTH_PARAM, URL
 
 # copying this from click code
 FC = TypeVar("FC", Callable[..., Any], click.Command)
