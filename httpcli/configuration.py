@@ -1,7 +1,7 @@
 import json
 from typing import Optional, Union, List, Any
 from typing_extensions import Literal
-from pydantic import BaseSettings, BaseModel, AnyHttpUrl, validator
+from pydantic import BaseSettings, BaseModel, AnyHttpUrl, validator, FilePath
 
 
 class Auth(BaseModel):
@@ -38,6 +38,7 @@ class Configuration(BaseSettings):
     backend: Literal['trio', 'asyncio', 'uvloop'] = 'trio'
     auth: Optional[Union[BasicAuth, DigestAuth, OAuth2PasswordBearer]] = None
     follow_redirects: bool = True
+    verify: Union[bool, FilePath] = True
 
     @validator('auth', pre=True)
     def convert_str_to_dict(cls, value: Any) -> Any:

@@ -37,6 +37,7 @@ def http(context: click.Context, proxy: str, http_version: str, backend: str, au
         config.auth = auth
     if follow_redirects is not None:
         config.follow_redirects = follow_redirects
+    config.verify = False
 
 
 if __name__ == '__main__':
