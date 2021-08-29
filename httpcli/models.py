@@ -27,19 +27,19 @@ class UserMixin(BaseModel):
 
 
 class BasicAuth(UserMixin, Auth):
-    type: Literal['basic']
+    type: Literal['basic'] = 'basic'
 
 
 class DigestAuth(UserMixin, Auth):
-    type: Literal['digest']
+    type: Literal['digest'] = 'digest'
 
 
 class OAuth2(Auth):
-    type: Literal['oauth2']
+    type: Literal['oauth2'] = 'oauth2'
     flow: str
 
 
 class OAuth2PasswordBearer(UserMixin, OAuth2):
     token_url: AnyHttpUrl
-    flow: Literal['password']
+    flow: Literal['password'] = 'password'
     scopes: List[str] = []

@@ -35,9 +35,7 @@ def test_should_print_correct_configuration_with_env_variables_set(monkeypatch, 
 
 
 def test_should_print_correct_information_given_user_input(runner):
-    auth = OAuth2PasswordBearer(
-        type='oauth2', flow='password', username='foo', password='bar', token_url='http://token.com'
-    )
+    auth = OAuth2PasswordBearer(username='foo', password='bar', token_url='http://token.com')
     http_version = 'h2'
     config = Configuration(version=http_version, auth=auth, verify=False)
     result = runner.invoke(http, ['--auth', auth.json(), '--http-version', http_version, 'debug'])
