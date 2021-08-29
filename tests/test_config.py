@@ -36,16 +36,16 @@ def test_auth_configurations(auth_config, auth_type):
 
 
 def test_environment_config(monkeypatch):
-    monkeypatch.setenv('http_version', 'h2')
-    monkeypatch.setenv('http_proxy', 'http://proxy.com')
-    monkeypatch.setenv('HTTP_FOLLOW_REDIRECTS', 'false')
-    monkeypatch.setenv('HTTP_AUTH', json.dumps({'type': 'basic', 'username': 'foo', 'password': 'bar'}))
+    monkeypatch.setenv('http_cli_version', 'h2')
+    monkeypatch.setenv('http_cli_proxy', 'http://proxy.com')
+    monkeypatch.setenv('HTTP_CLI_FOLLOW_REDIRECTS', 'false')
+    monkeypatch.setenv('HTTP_CLI_AUTH', json.dumps({'type': 'basic', 'username': 'foo', 'password': 'bar'}))
 
     config = Configuration()
     assert config.version == 'h2'
-    assert config.proxy == 'http://proxy.com'
+    assert config.proxy.host == 'proxy.com'
     assert config.follow_redirects is False
-    assert config.auth is BasicAuth
+    assert isinstance(config.auth, BasicAuth)
 
 
 def test_config_raises_error_when_auth_is_not_valid_json(monkeypatch):

@@ -49,4 +49,4 @@ class Configuration(BaseSettings):
         return value
 
     class Config:
-        env_prefix = 'http_'
+        env_prefix = 'http_cli_'
