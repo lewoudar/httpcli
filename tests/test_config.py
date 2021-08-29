@@ -13,6 +13,7 @@ def test_default_configuration():
     assert config.backend == 'trio'
     assert config.auth is None
     assert config.follow_redirects is True
+    assert config.verify is True
 
 
 @pytest.mark.parametrize('proxy_url', ['http://proxy.com', 'https://proxy.com'])
@@ -49,7 +50,7 @@ def test_environment_config(monkeypatch):
 
 
 def test_config_raises_error_when_auth_is_not_valid_json(monkeypatch):
-    monkeypatch.setenv('http_auth', str({'type': 'basic', 'username': 'foo', 'password': 'bar'}))
+    monkeypatch.setenv('http_cli_auth', str({'type': 'basic', 'username': 'foo', 'password': 'bar'}))
     with pytest.raises(pydantic.ValidationError) as exc_info:
         Configuration()
 
