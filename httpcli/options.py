@@ -43,3 +43,33 @@ def global_cli_options(f: FC) -> FC:
     for callable_option in [proxy_option, http_version_option, backend_option, auth_option, follow_redirects_option]:
         f = callable_option(f)
     return f
+
+
+def query_option(f: FC) -> FC:
+    return click.option(
+        '-q', '--query', 'query_params',
+        multiple=True,
+        help='querystring argument passed to the request, can by passed multiple times'
+    )(f)
+
+
+def header_option(f: FC) -> FC:
+    return click.option(
+        '-H', '--header', 'headers',
+        multiple=True,
+        help='header passed to the request, can by passed multiple times'
+    )(f)
+
+
+def cookie_option(f: FC) -> FC:
+    return click.option(
+        '-c', '--cookie', 'cookies',
+        multiple=True,
+        help='cookie passed to the request, can by passed multiple times'
+    )(f)
+
+
+def http_query_options(f: FC) -> FC:
+    for option in [query_option, header_option, cookie_option]:
+        f = option(f)
+    return f

@@ -36,5 +36,31 @@ class UrlParameter(click.ParamType):
             self.fail(f'{value} is not a valid url')
 
 
+class HTTPParameter(click.ParamType):
+
+    def convert(
+            self, value: str, param: t.Optional[click.Parameter], ctx: t.Optional[click.Context]
+    ) -> t.Tuple[str, str]:
+        parts = value.split(':')
+        if len(parts) != 2:
+            self.fail(f'{value} is not in the form key:value')
+        return parts[0], parts[1]
+
+
+class QueryParam(HTTPParameter):
+    name = 'query'
+
+
+class CookieParam(HTTPParameter):
+    name = 'cookie'
+
+
+class HeaderParam(HTTPParameter):
+    name = 'header'
+
+
 AUTH_PARAM = AuthParameter()
 URL = UrlParameter()
+QUERY = QueryParam()
+COOKIE = CookieParam()
+HEADER = HeaderParam()
