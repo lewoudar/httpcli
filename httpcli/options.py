@@ -2,7 +2,7 @@ from typing import Callable, TypeVar, Any
 
 import click
 
-from .parameters import AUTH_PARAM, URL
+from .parameters import AUTH_PARAM, URL, HEADER, COOKIE, QUERY
 
 # copying this from click code
 FC = TypeVar("FC", Callable[..., Any], click.Command)
@@ -48,6 +48,7 @@ def global_cli_options(f: FC) -> FC:
 def query_option(f: FC) -> FC:
     return click.option(
         '-q', '--query', 'query_params',
+        type=QUERY,
         multiple=True,
         help='querystring argument passed to the request, can by passed multiple times'
     )(f)
@@ -56,6 +57,7 @@ def query_option(f: FC) -> FC:
 def header_option(f: FC) -> FC:
     return click.option(
         '-H', '--header', 'headers',
+        type=HEADER,
         multiple=True,
         help='header passed to the request, can by passed multiple times'
     )(f)
@@ -64,6 +66,7 @@ def header_option(f: FC) -> FC:
 def cookie_option(f: FC) -> FC:
     return click.option(
         '-c', '--cookie', 'cookies',
+        type=COOKIE,
         multiple=True,
         help='cookie passed to the request, can by passed multiple times'
     )(f)
