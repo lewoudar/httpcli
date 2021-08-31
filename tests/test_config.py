@@ -1,7 +1,7 @@
 import json
 
-import pytest
 import pydantic
+import pytest
 
 from httpcli.configuration import Configuration, BasicAuth, DigestAuth, OAuth2PasswordBearer
 
@@ -14,6 +14,7 @@ def test_default_configuration():
     assert config.auth is None
     assert config.follow_redirects is True
     assert config.verify is True
+    assert config.timeout == 5.0
 
 
 @pytest.mark.parametrize('proxy_url', ['http://proxy.com', 'https://proxy.com'])

@@ -39,8 +39,17 @@ def follow_redirects_option(f: FC) -> FC:
     )(f)
 
 
+def timeout_option(f: FC) -> FC:
+    return click.option(
+        '-t', '--timeout',
+        type=float,
+        help='time for request to complete, a negative value means there is no timeout'
+    )(f)
+
+
 def global_cli_options(f: FC) -> FC:
-    for callable_option in [proxy_option, http_version_option, backend_option, auth_option, follow_redirects_option]:
+    options = [proxy_option, http_version_option, backend_option, auth_option, follow_redirects_option, timeout_option]
+    for callable_option in options:
         f = callable_option(f)
     return f
 

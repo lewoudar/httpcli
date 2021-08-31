@@ -14,6 +14,7 @@ class Configuration(BaseSettings):
     auth: Optional[Union[BasicAuth, DigestAuth, OAuth2PasswordBearer]] = None
     follow_redirects: bool = True
     verify: Union[bool, FilePath] = True
+    timeout: Optional[float] = 5.0
 
     @validator('auth', pre=True)
     def convert_str_to_dict(cls, value: Any) -> Any:
