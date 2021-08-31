@@ -2,7 +2,7 @@ import click
 
 from httpcli.configuration import Configuration
 from httpcli.main import http
-from httpcli.models import OAuth2PasswordBearer
+from httpcli.models import OAuth2PasswordBearer, BasicAuth
 
 
 @click.command()
@@ -12,6 +12,17 @@ def debug(obj: Configuration):
 
 
 http.add_command(debug)
+
+YAML_DATA = """
+httpcli:
+  version: h2
+  proxy: https://proxy.com
+  timeout: null
+  auth:
+    type: basic
+    username: foo
+    password: bar
+"""
 
 
 def test_should_print_default_configuration(runner):
@@ -30,6 +41,17 @@ def test_should_print_correct_configuration_with_env_variables_set(monkeypatch, 
     monkeypatch.setenv('http_cli_timeout', '3')
     config = Configuration(follow_redirects=follow_redirects, proxy=proxy_url, verify=False, timeout=3)
     result = runner.invoke(http, ['debug'])
+
+    assert result.exit_code == 0
+    assert result.output == f'{config}\n'
+
+
+def test_should_print_correct_configuration_with_given_configuration_file(runner, tmp_path):
+    config_file = tmp_path / 'config.yaml'
+    config_file.write_text(YAML_DATA)
+    auth = BasicAuth(username='foo', password='bar')
+    config = Configuration(proxy='https://proxy.com', version='h2', timeout=None, auth=auth)
+    result = runner.invoke(http, ['--config-file', f'{config_file}', '--http-version', 'h1', 'debug'])
 
     assert result.exit_code == 0
     assert result.output == f'{config}\n'

@@ -47,8 +47,20 @@ def timeout_option(f: FC) -> FC:
     )(f)
 
 
+def config_file_option(f: FC) -> FC:
+    return click.option(
+        '--config-file',
+        type=click.File(),
+        help='A configuration file with options used to set the cli. '
+             'Note that the file takes precedence over the other options'
+    )(f)
+
+
 def global_cli_options(f: FC) -> FC:
-    options = [proxy_option, http_version_option, backend_option, auth_option, follow_redirects_option, timeout_option]
+    options = [
+        proxy_option, http_version_option, backend_option, auth_option, follow_redirects_option, timeout_option,
+        config_file_option
+    ]
     for callable_option in options:
         f = callable_option(f)
     return f

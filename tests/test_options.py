@@ -6,13 +6,14 @@ from httpcli.options import global_cli_options, http_query_options
 
 @click.command()
 @global_cli_options
-def debug_global_options(proxy, http_version, backend, auth, follow_redirects, timeout):
+def debug_global_options(proxy, http_version, backend, auth, follow_redirects, timeout, config_file):
     click.echo(proxy)
     click.echo(http_version)
     click.echo(backend)
     click.echo(auth)
     click.echo(follow_redirects)
     click.echo(timeout)
+    click.echo(config_file)
 
 
 @click.command()
@@ -30,7 +31,7 @@ def test_global_cli_options_is_correctly_formed(runner):
     result = runner.invoke(debug_global_options, arguments)
 
     assert result.exit_code == 0
-    assert result.output == f'{proxy}\nh2\ntrio\n{auth}\nFalse\n3.0\n'
+    assert result.output == f'{proxy}\nh2\ntrio\n{auth}\nFalse\n3.0\n\n'
 
 
 def test_http_query_options_is_correctly_formed(runner):
