@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Any, TextIO, Optional, Union
+from typing import Dict, Any, TextIO, Optional, Union, Tuple
 
 import click
 import httpx
@@ -8,6 +8,8 @@ import yaml
 
 from httpcli.configuration import Configuration
 from httpcli.models import BasicAuth, DigestAuth, Auth
+
+HttpProperty = Tuple[Tuple[str, str]]
 
 
 def build_base_httpx_arguments(config: Configuration) -> Dict[str, Any]:
@@ -27,6 +29,24 @@ def build_base_httpx_arguments(config: Configuration) -> Dict[str, Any]:
 
     if config.proxy is not None:
         arguments['proxies'] = str(config.proxy)
+
+    return arguments
+
+
+def build_http_property_arguments(
+        headers: Optional[HttpProperty] = None,
+        cookies: Optional[HttpProperty] = None,
+        query_params: Optional[HttpProperty] = None
+) -> Dict[str, HttpProperty]:
+    arguments = {}
+    if headers is not None:
+        arguments['headers'] = headers
+
+    if cookies is not None:
+        arguments['cookies'] = cookies
+
+    if query_params is not None:
+        arguments['params'] = query_params
 
     return arguments
 
