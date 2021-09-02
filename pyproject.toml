@@ -23,6 +23,7 @@ pytest = "^6.2.4"
 pytest-trio = "^0.7.0"
 flake8 = "^3.9.2"
 bandit = "^1.7.0"
+respx = "^0.17.1"
 
 [tool.poetry.scripts]
 http = "httpcli.main:http"

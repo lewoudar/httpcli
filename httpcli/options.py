@@ -2,7 +2,7 @@ from typing import Callable, TypeVar, Any
 
 import click
 
-from .parameters import AUTH_PARAM, URL, HEADER, COOKIE, QUERY
+from .parameters import AUTH_PARAM, URL, HEADER, COOKIE, QUERY, FORM
 
 # copying this from click code
 FC = TypeVar("FC", Callable[..., Any], click.Command)
@@ -97,3 +97,12 @@ def http_query_options(f: FC) -> FC:
     for option in [query_option, header_option, cookie_option]:
         f = option(f)
     return f
+
+
+def form_option(f: FC) -> FC:
+    return click.option(
+        '-f', '--form',
+        type=FORM,
+        multiple=True,
+        help='form data passed to the request, can be passed multiple times'
+    )(f)
