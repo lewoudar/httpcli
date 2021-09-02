@@ -2,7 +2,7 @@ from typing import Callable, TypeVar, Any
 
 import click
 
-from .parameters import AUTH_PARAM, URL, HEADER, COOKIE, QUERY, FORM
+from .parameters import AUTH_PARAM, URL, HEADER, COOKIE, QUERY, FORM, JSON, RAW_PAYLOAD
 
 # copying this from click code
 FC = TypeVar("FC", Callable[..., Any], click.Command)
@@ -105,4 +105,21 @@ def form_option(f: FC) -> FC:
         type=FORM,
         multiple=True,
         help='form data passed to the request, can be passed multiple times'
+    )(f)
+
+
+def json_option(f: FC) -> FC:
+    return click.option(
+        '-j', '--json', 'json_data',
+        type=JSON,
+        multiple=True,
+        help='json data passed to the request, can be passed multiple times'
+    )(f)
+
+
+def raw_payload_option(f: FC) -> FC:
+    return click.option(
+        '-r', '--raw',
+        type=RAW_PAYLOAD,
+        help='Raw data passed to the request. It cannot be used with --json and --form options.'
     )(f)
