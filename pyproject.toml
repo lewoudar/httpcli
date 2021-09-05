@@ -24,9 +24,15 @@ pytest-trio = "^0.7.0"
 flake8 = "^3.9.2"
 bandit = "^1.7.0"
 respx = "^0.17.1"
+pytest-cov = "^2.12.1"
 
 [tool.poetry.scripts]
 http = "httpcli.main:http"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=httpcli --cov-report html --cov-report xml"
+trio_mode = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -1,13 +1,14 @@
 from pathlib import Path
 from typing import Dict, Any, TextIO, Optional, Union, Tuple
 
+import anyio
 import click
 import httpx
 import pydantic
 import yaml
 
 from httpcli.configuration import Configuration
-from httpcli.models import BasicAuth, DigestAuth, Auth
+from httpcli.models import BasicAuth, DigestAuth, Auth, OAuth2PasswordBearer
 
 HttpProperty = Tuple[Tuple[str, str]]
 
@@ -25,7 +26,6 @@ def build_base_httpx_arguments(config: Configuration) -> Dict[str, Any]:
             arguments['auth'] = httpx.BasicAuth(auth.username, auth.password)
         elif isinstance(auth, DigestAuth):
             arguments['auth'] = httpx.DigestAuth(auth.username, auth.password)
-        # todo: implement oauth2 password logic
 
     if config.proxy is not None:
         arguments['proxies'] = str(config.proxy)
@@ -49,6 +49,41 @@ def build_http_property_arguments(
         arguments['params'] = query_params
 
     return arguments
+
+
+async def get_oauth2_bearer_token(auth: OAuth2PasswordBearer) -> str:
+    # just decide to use of timeout of 5s because it seems reasonable..
+    # this should probably be configurable but I will not do it in this POC
+    with anyio.move_on_after(5) as scope:
+        async with httpx.AsyncClient(base_url=auth.token_url) as client:
+            response = await client.post('/', data={'username': auth.username, 'password': auth.password})
+            if response.status_code >= 400:
+                click.secho(f'unable to fetch token, reason: {response.text}', fg='red')
+                raise click.Abort()
+            else:
+                return response.json()['access_token']
+
+    if scope.cancel_called:
+        click.secho('the request timeout has expired', fg='red')
+        raise click.Abort()
+
+
+async def build_read_method_arguments(
+        config: Configuration,
+        headers: Optional[HttpProperty] = None,
+        cookies: Optional[HttpProperty] = None,
+        query_params: Optional[HttpProperty] = None
+) -> Dict[str, Any]:
+    base_arguments = build_base_httpx_arguments(config)
+    http_arguments = build_http_property_arguments(headers, cookies, query_params)
+
+    if isinstance(config.auth, OAuth2PasswordBearer):
+        token = await get_oauth2_bearer_token(config.auth)
+        headers = list(http_arguments.get('headers', []))
+        headers.append(('Authorization', f'Bearer {token}'))
+        http_arguments['headers'] = headers  # type: ignore
+
+    return {**base_arguments, **http_arguments}
 
 
 def set_configuration_options(

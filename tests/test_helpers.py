@@ -1,14 +1,20 @@
+import secrets
+
+import anyio
 import click
 import httpx
 import pytest
 
-from httpcli.configuration import Configuration, BasicAuth, DigestAuth
-from httpcli.helpers import (build_base_httpx_arguments, load_config_from_yaml, build_http_property_arguments)
+from httpcli.configuration import Configuration, BasicAuth, DigestAuth, OAuth2PasswordBearer
+from httpcli.helpers import (
+    build_base_httpx_arguments, load_config_from_yaml, build_http_property_arguments, get_oauth2_bearer_token,
+    build_read_method_arguments
+)
 
 CONFIGURATIONS = [
     Configuration(),
     Configuration(verify=False, version='h2'),
-    Configuration(proxy='https://proxy.com', follow_redirects=False),
+    Configuration(proxy='https://proxy.com', follow_redirects=False),  # type: ignore
     Configuration(auth=DigestAuth(username='foo', password='bar'), follow_redirects=False)
 ]
 
@@ -115,3 +121,83 @@ class TestLoadConfigFromYaml:
             config = load_config_from_yaml(f)
             assert config.timeout == 2
             assert config.backend == 'asyncio'
+
+
+class TestGetOauth2BearerToken:
+    """Tests function get_oauth2_bearer_token"""
+
+    async def test_should_raise_error_when_receiving_errored_status_code(self, respx_mock, capsys):
+        auth = OAuth2PasswordBearer(token_url='https://token.com', username='foo', password='bar')  # type: ignore
+        json_response = {'detail': 'not allowed'}
+        httpx_response = httpx.Response(400, json=json_response)
+        respx_mock.post('https://token.com', data=auth.dict(include={'username', 'password'})) % httpx_response
+
+        with pytest.raises(click.Abort):
+            await get_oauth2_bearer_token(auth)
+
+        output = capsys.readouterr().out
+        # click changed quotes used when printing the json output, so I can't test the whole string directly
+        assert f'unable to fetch token, reason:' in output
+        assert 'detail' in output
+        assert 'not allowed' in output
+
+    async def test_should_raise_error_when_request_timeout_expired(self, capsys, respx_mock, autojump_clock):
+        async def side_effect(_):
+            await anyio.sleep(6)
+
+        auth = OAuth2PasswordBearer(token_url='https://token.com', username='foo', password='bar')  # type: ignore
+        route = respx_mock.post('https://token.com', data=auth.dict(include={'username', 'password'}))
+        route.side_effect = side_effect
+
+        with pytest.raises(click.Abort):
+            await get_oauth2_bearer_token(auth)
+
+        assert capsys.readouterr().out == 'the request timeout has expired\n'
+
+    async def test_should_return_access_token(self, respx_mock):
+        auth = OAuth2PasswordBearer(token_url='https://token.com', username='foo', password='bar')  # type: ignore
+        access_token = secrets.token_hex(16)
+        route = respx_mock.post('https://token.com', data=auth.dict(include={'username', 'password'}))
+        route.return_value = httpx.Response(
+            status_code=200, json={'token_type': 'bearer', 'access_token': access_token}
+        )
+
+        token = await get_oauth2_bearer_token(auth)
+        assert access_token == token
+
+
+class TestBuildReadMethodArguments:
+    """Tests function build_read_method_arguments"""
+
+    @pytest.mark.parametrize(('auth_argument', 'http_auth_class'), [
+        (BasicAuth(username='foo', password='bar'), httpx.BasicAuth),
+        (DigestAuth(username='foo', password='bar'), httpx.DigestAuth)
+    ])
+    async def test_should_return_httpx_config_given_basic_digest_auth(self, auth_argument, http_auth_class):
+        proxy = 'http://proxy.com'
+        config = Configuration(auth=auth_argument, proxy=proxy)  # type: ignore
+        cookies = (('hello', 'world'),)
+        query_params = (('search', 'bar'),)
+
+        arguments = await build_read_method_arguments(config, cookies=cookies, query_params=query_params)
+
+        assert arguments['proxies'] == proxy
+        assert isinstance(arguments['auth'], http_auth_class)
+        assert arguments['cookies'] == cookies
+        assert arguments['params'] == query_params
+
+    async def test_should_return_httpx_given_oauth2_password_auth(self, respx_mock):
+        token_url = 'https://token.com'
+        access_token = secrets.token_hex(16)
+        auth = OAuth2PasswordBearer(username='foo', password='bar', token_url=token_url)  # type: ignore
+        config = Configuration(auth=auth)
+        route = respx_mock.post(token_url, data=auth.dict(include={'username', 'password'}))
+        route.return_value = httpx.Response(
+            status_code=200, json={'token_type': 'bearer', 'access_token': access_token}
+        )
+
+        arguments = await build_read_method_arguments(config)
+
+        assert arguments['http1'] is True
+        assert arguments['http2'] is False
+        assert arguments['headers'] == [('Authorization', f'Bearer {access_token}')]
