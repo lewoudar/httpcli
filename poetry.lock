@@ -373,7 +373,7 @@ python-versions = ">=3.6"
 [package.dependencies]
 atomicwrites = {version = ">=1.0", markers = "sys_platform == \"win32\""}
 attrs = ">=19.2.0"
-colorama = {version = "*", markers = "sys_platform == \"win32\""}
+colorama = { version = "*", markers = "sys_platform == \"win32\"" }
 importlib-metadata = { version = ">=0.12", markers = "python_version < \"3.8\"" }
 iniconfig = "*"
 packaging = "*"
@@ -399,6 +399,20 @@ toml = "*"
 
 [package.extras]
 testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtualenv"]
+
+[[package]]
+name = "pytest-mock"
+version = "3.6.1"
+description = "Thin-wrapper around the mock package for easier use with pytest"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+pytest = ">=5.0"
+
+[package.extras]
+dev = ["pre-commit", "tox", "pytest-asyncio"]
 
 [[package]]
 name = "pytest-trio"
@@ -582,7 +596,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "d07d88b5b26f0e1f4e8b3b8a3ce16a90f9f955e9accff5b0f8446c812826cd99"
+content-hash = "6a28cd0d8f4f353d747b5e9691505689dfe307bed436d9a361027f34a3e3285d"
 
 [metadata.files]
 anyio = [
@@ -837,6 +851,10 @@ pytest = [
 pytest-cov = [
     { file = "pytest-cov-2.12.1.tar.gz", hash = "sha256:261ceeb8c227b726249b376b8526b600f38667ee314f910353fa318caa01f4d7" },
     { file = "pytest_cov-2.12.1-py2.py3-none-any.whl", hash = "sha256:261bb9e47e65bd099c89c3edf92972865210c36813f80ede5277dceb77a4a62a" },
+]
+pytest-mock = [
+    { file = "pytest-mock-3.6.1.tar.gz", hash = "sha256:40217a058c52a63f1042f0784f62009e976ba824c418cced42e88d5f40ab0e62" },
+    { file = "pytest_mock-3.6.1-py3-none-any.whl", hash = "sha256:30c2f2cc9759e76eee674b81ea28c9f0b94f8f0445a1b87762cadf774f0df7e3" },
 ]
 pytest-trio = [
     { file = "pytest-trio-0.7.0.tar.gz", hash = "sha256:c01b741819aec2c419555f28944e132d3c711dae1e673d63260809bf92c30c31" },

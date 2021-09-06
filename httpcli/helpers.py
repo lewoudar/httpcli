@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Any, TextIO, Optional, Union, Tuple
+from typing import Dict, Any, TextIO, Optional, Union
 
 import anyio
 import click
@@ -9,8 +9,7 @@ import yaml
 
 from httpcli.configuration import Configuration
 from httpcli.models import BasicAuth, DigestAuth, Auth, OAuth2PasswordBearer
-
-HttpProperty = Tuple[Tuple[str, str]]
+from httpcli.types import HttpProperty
 
 
 def build_base_httpx_arguments(config: Configuration) -> Dict[str, Any]:
@@ -55,7 +54,7 @@ async def get_oauth2_bearer_token(auth: OAuth2PasswordBearer) -> str:
     # just decide to use of timeout of 5s because it seems reasonable..
     # this should probably be configurable but I will not do it in this POC
     with anyio.move_on_after(5) as scope:
-        async with httpx.AsyncClient(base_url=auth.token_url) as client:
+        async with httpx.AsyncClient(base_url=auth.token_url, timeout=None) as client:
             response = await client.post('/', data={'username': auth.username, 'password': auth.password})
             if response.status_code >= 400:
                 click.secho(f'unable to fetch token, reason: {response.text}', fg='red')
