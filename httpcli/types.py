@@ -1,3 +1,3 @@
-from typing import Tuple
+from typing import Tuple, Union, List
 
-HttpProperty = Tuple[Tuple[str, str]]
+HttpProperty = Union[Tuple[Tuple[str, str]], List[Tuple[str, str]]]

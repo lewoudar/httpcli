@@ -80,10 +80,10 @@ class TestBuildHttpPropertyArguments:
 
     @pytest.mark.parametrize(('input_arguments', 'output_arguments'), [
         ({'headers': HTTP_ARGUMENT}, {'headers': HTTP_ARGUMENT}),
-        ({'cookies': HTTP_ARGUMENT}, {'cookies': HTTP_ARGUMENT}),
+        ({'cookies': HTTP_ARGUMENT}, {'cookies': list(HTTP_ARGUMENT)}),
         ({'query_params': HTTP_ARGUMENT}, {'params': HTTP_ARGUMENT}),
         ({'headers': HTTP_ARGUMENT, 'cookies': HTTP_ARGUMENT, 'query_params': HTTP_ARGUMENT},
-         {'headers': HTTP_ARGUMENT, 'cookies': HTTP_ARGUMENT, 'params': HTTP_ARGUMENT})
+         {'headers': HTTP_ARGUMENT, 'cookies': list(HTTP_ARGUMENT), 'params': HTTP_ARGUMENT})
     ])
     def test_should_return_correct_arguments_given_correct_input(self, input_arguments, output_arguments):
         assert build_http_property_arguments(**input_arguments) == output_arguments
@@ -176,7 +176,7 @@ class TestBuildReadMethodArguments:
     async def test_should_return_httpx_config_given_basic_digest_auth(self, auth_argument, http_auth_class):
         proxy = 'http://proxy.com'
         config = Configuration(auth=auth_argument, proxy=proxy)  # type: ignore
-        cookies = (('hello', 'world'),)
+        cookies = [('hello', 'world')]
         query_params = (('search', 'bar'),)
 
         arguments = await build_read_method_arguments(config, cookies=cookies, query_params=query_params)

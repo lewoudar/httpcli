@@ -42,7 +42,8 @@ def build_http_property_arguments(
         arguments['headers'] = headers
 
     if cookies is not None:
-        arguments['cookies'] = cookies
+        # we get tuple of tuples from click but httpx only handles list of tuples
+        arguments['cookies'] = list(cookies)
 
     if query_params is not None:
         arguments['params'] = query_params
