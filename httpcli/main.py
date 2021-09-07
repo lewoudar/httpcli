@@ -3,6 +3,7 @@ from typing import TextIO
 import click
 from pydantic import AnyHttpUrl
 
+from .commands.read_commands import get
 from .configuration import Configuration
 from .helpers import load_config_from_yaml, set_configuration_options
 from .models import Auth
@@ -29,6 +30,9 @@ def http(
     config = context.ensure_object(Configuration)
     set_configuration_options(config, proxy, http_version, backend, auth, follow_redirects, timeout, verify=False)
 
+
+# add subcommands
+http.add_command(get)  # type: ignore
 
 if __name__ == '__main__':
     http()
