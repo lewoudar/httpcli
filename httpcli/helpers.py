@@ -97,17 +97,17 @@ async def build_write_method_arguments(
         raw: Optional[bytes] = None
 ) -> Dict[str, Any]:
     arguments = await build_read_method_arguments(config, headers, cookies, query_params)
-    presence_info = [data is not None for data in [form, json_data, raw]]
+    presence_info = [(data is not None and data != ()) for data in [form, json_data, raw]]
     if presence_info.count(True) > 1:
         raise click.UsageError(
             'you cannot mix different types of data, you must choose between one between form, json or raw'
         )
 
-    if form is not None:
+    if form:
         arguments['data'] = dict(form)
-    elif json_data is not None:
+    if json_data:
         arguments['json'] = dict(json_data)
-    else:
+    if raw:
         arguments['content'] = raw
 
     return arguments
