@@ -3,12 +3,13 @@ import secrets
 import anyio
 import asyncclick as click
 import httpx
+import mock
 import pytest
 
 from httpcli.configuration import Configuration, BasicAuth, DigestAuth, OAuth2PasswordBearer
 from httpcli.helpers import (
     build_base_httpx_arguments, load_config_from_yaml, build_http_property_arguments, get_oauth2_bearer_token,
-    build_read_method_arguments
+    build_read_method_arguments, build_write_method_arguments
 )
 
 CONFIGURATIONS = [
@@ -201,3 +202,46 @@ class TestBuildReadMethodArguments:
         assert arguments['http1'] is True
         assert arguments['http2'] is False
         assert arguments['headers'] == [('Authorization', f'Bearer {access_token}')]
+
+
+class TestBuildWriteMethodArguments:
+    """Tests function build_write_method_arguments"""
+
+    async def test_should_call_function_build_read_method_arguments(self, mocker):
+        build_read_mock = mocker.patch('httpcli.helpers.build_read_method_arguments', new=mock.AsyncMock())
+        headers = cookies = query_params = [('foo', 'bar')]
+        config = Configuration()
+        await build_write_method_arguments(config, headers, cookies, query_params)
+
+        build_read_mock.assert_awaited_once_with(config, headers, cookies, query_params)
+
+    @pytest.mark.parametrize('arguments', [
+        {'json_data': [('foo', 'bar')], 'form': [('foo', 'bar')]},
+        {'json_data': [('foo', 'bar')], 'raw': b'boom'},
+        {'raw': b'boom', 'form': [('foo', 'bar')]},
+        {'json_data': [('foo', 'bar')], 'form': [('foo', 'bar')], 'raw': b'boom'},
+    ])
+    async def test_should_raise_error_when_setting_more_than_one_data_type(self, arguments):
+        with pytest.raises(click.UsageError) as exc_info:
+            await build_write_method_arguments(Configuration(), **arguments)
+
+        message = 'you cannot mix different types of data, you must choose between one between form, json or raw'
+        assert message == str(exc_info.value)
+
+    async def test_should_return_form_dict_when_given_form_info_as_input(self):
+        form = (('foo', 'bar'),)
+        arguments = await build_write_method_arguments(Configuration(), form=form)
+
+        assert arguments['data'] == dict(form)
+
+    async def test_should_return_json_dict_when_given_json_data_as_input(self):
+        json_data = (('foo', 'bar'),)
+        arguments = await build_write_method_arguments(Configuration(), json_data=json_data)
+
+        assert arguments['json'] == dict(json_data)
+
+    async def test_should_return_raw_data_when_given_raw_data_as_input(self):
+        raw = b'hello'
+        arguments = await build_write_method_arguments(Configuration(), raw=raw)
+
+        assert arguments['content'] == raw

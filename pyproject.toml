@@ -27,6 +27,7 @@ bandit = "^1.7.0"
 respx = "^0.17.1"
 pytest-cov = "^2.12.1"
 pytest-mock = "^3.6.1"
+mock = "^4.0.3"
 
 [tool.poetry.scripts]
 http = "httpcli.main:http"
