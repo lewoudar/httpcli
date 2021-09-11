@@ -8,6 +8,7 @@ import pydantic
 import yaml
 
 from httpcli.configuration import Configuration
+from httpcli.console import console
 from httpcli.models import BasicAuth, DigestAuth, Auth, OAuth2PasswordBearer
 from httpcli.types import HttpProperty
 
@@ -58,13 +59,13 @@ async def get_oauth2_bearer_token(auth: OAuth2PasswordBearer) -> str:
         async with httpx.AsyncClient(base_url=auth.token_url, timeout=None) as client:
             response = await client.post('/', data={'username': auth.username, 'password': auth.password})
             if response.status_code >= 400:
-                click.secho(f'unable to fetch token, reason: {response.text}', fg='red')
+                console.print(f'[error]unable to fetch token, reason: {response.text}')
                 raise click.Abort()
             else:
                 return response.json()['access_token']
 
     if scope.cancel_called:
-        click.secho('the request timeout has expired', fg='red')
+        console.print('[error]the request timeout has expired')
         raise click.Abort()
 
 

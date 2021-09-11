@@ -75,9 +75,9 @@ async def perform_read_request(
                 response = await client.request(method, url, allow_redirects=allow_redirects)
                 print_response(response)
         except httpx.HTTPError as e:
-            console.print(f'[red]unexpected error: {e}')
+            console.print(f'[error]unexpected error: {e}')
             raise click.Abort()
 
     if scope.cancel_called:
-        console.print('[red]the request timeout has expired')
+        console.print('[error]the request timeout has expired')
         raise click.Abort()
