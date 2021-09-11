@@ -1,5 +1,5 @@
-from click.testing import CliRunner
 import pytest
+from asyncclick.testing import CliRunner
 
 
 @pytest.fixture()

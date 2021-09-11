@@ -2,7 +2,7 @@ import json
 import typing as t
 from pathlib import Path
 
-import click
+import asyncclick as click
 from pydantic import ValidationError, AnyHttpUrl
 
 from .configuration import Configuration

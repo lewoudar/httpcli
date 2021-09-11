@@ -1,7 +1,7 @@
 import json
 
 import anyio
-import click
+import asyncclick as click
 import httpx
 from pygments.lexers import get_lexer_for_mimetype
 from pygments.util import ClassNotFound

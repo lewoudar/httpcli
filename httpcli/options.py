@@ -1,6 +1,6 @@
 from typing import Callable, TypeVar, Any
 
-import click
+import asyncclick as click
 
 from .parameters import AUTH_PARAM, URL, HEADER, COOKIE, QUERY, FORM, JSON, RAW_PAYLOAD
 

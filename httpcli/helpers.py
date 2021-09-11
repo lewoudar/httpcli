@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Dict, Any, TextIO, Optional, Union
 
 import anyio
-import click
+import asyncclick as click
 import httpx
 import pydantic
 import yaml

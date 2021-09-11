@@ -1,9 +1,10 @@
 from typing import TextIO
 
-import click
+import asyncclick as click
 from pydantic import AnyHttpUrl
 
-from .commands.read_commands import get
+from .commands.read_commands import get, head, options
+from .commands.write_commands import delete
 from .configuration import Configuration
 from .helpers import load_config_from_yaml, set_configuration_options
 from .models import Auth
@@ -33,6 +34,9 @@ def http(
 
 # add subcommands
 http.add_command(get)  # type: ignore
+http.add_command(head)  # type: ignore
+http.add_command(options)  # type: ignore
+http.add_command(delete)  # type: ignore
 
 if __name__ == '__main__':
     http()

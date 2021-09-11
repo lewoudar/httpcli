@@ -1,25 +1,50 @@
-import anyio
 import httpx
 
 from httpcli.main import http
 
 
-async def test_should_print_error_when_request_timeout_expired(runner, respx_mock, autojump_clock):
-    async def side_effect(_):
-        await anyio.sleep(6)
+async def test_should_get_print_response_in_normal_cases(runner, respx_mock):
+    data = '<p>Hello world</p>'
+    respx_mock.get('https://example.com') % httpx.Response(status_code=200, html=data)
+    result = await runner.invoke(http, ['get', 'https://example.com'])
 
-    respx_mock.route(method='GET', host='example.com').mock(side_effect=side_effect)
-    result = runner.invoke(http, ['get', 'https://example.com'])
+    assert result.exit_code == 0
+    output = result.output
+    assert 'content-type: text/html; charset=utf-8' in output
+    assert f'content-length: {len(data)}' in output
+    assert '<p>Hello' in output
+    assert 'world</p>' in output
 
-    assert result.exit_code == 1
-    print(result.exception)
-    assert result.output == 'the request timeout has expired\nAborted!\n'
+
+async def test_should_print_head_response_in_normal_cases(runner, respx_mock):
+    headers = {
+        'content-encoding': 'gzip',
+        'accept-ranges': 'bytes',
+        'content-length': '648'
+    }
+    respx_mock.head('https://example.com') % httpx.Response(status_code=200, headers=headers)
+    result = await runner.invoke(http, ['head', 'https://example.com'])
+
+    assert result.exit_code == 0
+    output = result.output
+    assert 'HTTP/1.1 200 OK' in output
+    assert 'content-encoding: gzip' in output
+    assert 'accept-ranges: bytes' in output
+    assert 'content-length: 648' in output
 
 
-async def test_should_print_error_when_unexpected_httpx_error_happened(runner, respx_mock):
-    respx_mock.route(method='GET', host='example.com').mock(side_effect=httpx.TransportError('just a test error'))
-    result = runner.invoke(http, ['get', 'https://example.com'])
+async def test_should_print_options_response_in_normal_cases(runner, respx_mock):
+    headers = {
+        'allow': 'OPTIONS, GET, HEAD, POST',
+        'content-type': 'text/html; charset=utf-8',
+        'server': 'EOS (vny/0452)'
+    }
+    respx_mock.options('https://example.com') % httpx.Response(status_code=200, headers=headers)
+    result = await runner.invoke(http, ['options', 'https://example.com'])
 
-    assert result.exit_code == 1
-    print(result.exception)
-    print(result.output)
+    assert result.exit_code == 0
+    output = result.output
+    assert 'HTTP/1.1 200 OK' in output
+    assert 'allow: OPTIONS, GET, HEAD, POST' in output
+    assert 'content-type: text/html; charset=utf-8' in output
+    assert 'server: EOS (vny/0452)' in output
