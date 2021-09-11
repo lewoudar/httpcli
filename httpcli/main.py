@@ -26,7 +26,9 @@ def http(
 ):
     """HTTP CLI"""
     if config_file:
-        context.obj = load_config_from_yaml(config_file)
+        config = load_config_from_yaml(config_file)
+        config.verify = False
+        context.obj = config
         return
     config = context.ensure_object(Configuration)
     set_configuration_options(config, proxy, http_version, backend, auth, follow_redirects, timeout, verify=False)
