@@ -1,7 +1,7 @@
 import json
 
 import anyio
-import click
+import asyncclick as click
 import httpx
 import pytest
 

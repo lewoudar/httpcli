@@ -50,7 +50,7 @@ async def test_should_print_correct_configuration_with_given_configuration_file(
     config_file = tmp_path / 'config.yaml'
     config_file.write_text(YAML_DATA)
     auth = BasicAuth(username='foo', password='bar')
-    config = Configuration(proxy='https://proxy.com', version='h2', timeout=None, auth=auth)
+    config = Configuration(proxy='https://proxy.com', version='h2', timeout=None, auth=auth, verify=False)
     result = await runner.invoke(http, ['--config-file', f'{config_file}', '--http-version', 'h1', 'debug'])
 
     assert result.exit_code == 0
