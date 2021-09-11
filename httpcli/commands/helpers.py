@@ -1,4 +1,5 @@
 import json
+from typing import Dict, Any, Optional
 
 import anyio
 import asyncclick as click
@@ -10,7 +11,7 @@ from typing_extensions import Literal
 
 from httpcli.configuration import Configuration
 from httpcli.console import console
-from httpcli.helpers import build_read_method_arguments
+from httpcli.helpers import build_read_method_arguments, build_write_method_arguments
 from httpcli.types import HttpProperty
 
 
@@ -57,22 +58,17 @@ def print_response(response: httpx.Response) -> None:
         console.print(response.text)
 
 
-# delete is not a read method but it takes the same http parameters as the read methods.
-async def perform_read_request(
-        method: Literal['GET', 'HEAD', 'OPTIONS', 'DELETE'],
+async def _perform_request(
+        method: Literal['GET', 'HEAD', 'OPTIONS', 'DELETE', 'POST', 'PUT', 'PATCH'],
         url: str,
         config: Configuration,
-        headers: HttpProperty,
-        query_params: HttpProperty,
-        cookies: HttpProperty
-):
-    arguments = await build_read_method_arguments(config, headers, cookies, query_params)
-    allow_redirects = arguments.pop('allow_redirects')
-
+        base_arguments: Dict[str, Any],
+        method_arguments: Dict[str, Any]
+) -> None:
     with anyio.move_on_after(config.timeout) as scope:
         try:
-            async with httpx.AsyncClient(**arguments, timeout=None) as client:
-                response = await client.request(method, url, allow_redirects=allow_redirects)
+            async with httpx.AsyncClient(**base_arguments, timeout=None) as client:
+                response = await client.request(method, url, **method_arguments)
                 print_response(response)
         except httpx.HTTPError as e:
             console.print(f'[error]unexpected error: {e}')
@@ -81,3 +77,39 @@ async def perform_read_request(
     if scope.cancel_called:
         console.print('[error]the request timeout has expired')
         raise click.Abort()
+
+
+# delete is not a read method but it takes the same http parameters as the read methods.
+async def perform_read_request(
+        method: Literal['GET', 'HEAD', 'OPTIONS', 'DELETE'],
+        url: str,
+        config: Configuration,
+        headers: Optional[HttpProperty] = None,
+        query_params: Optional[HttpProperty] = None,
+        cookies: Optional[HttpProperty] = None
+):
+    arguments = await build_read_method_arguments(config, headers, cookies, query_params)
+    method_arguments = {'allow_redirects': arguments.pop('allow_redirects')}
+
+    await _perform_request(method, url, config, arguments, method_arguments)
+
+
+async def perform_write_request(
+        method: Literal['POST', 'PUT', 'PATCH'],
+        url: str,
+        config: Configuration,
+        headers: Optional[HttpProperty] = None,
+        query_params: Optional[HttpProperty] = None,
+        cookies: Optional[HttpProperty] = None,
+        form: Optional[HttpProperty] = None,
+        json_data: Optional[HttpProperty] = None,
+        raw: Optional[bytes] = None
+):
+    arguments = await build_write_method_arguments(config, headers, cookies, query_params, form, json_data, raw)
+    method_arguments = {'allow_redirects': arguments.pop('allow_redirects')}
+    for item in ['data', 'json', 'content']:
+        if item in arguments:
+            method_arguments[item] = arguments.pop(item)
+            break
+
+    await _perform_request(method, url, config, arguments, method_arguments)

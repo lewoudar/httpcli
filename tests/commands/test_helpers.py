@@ -5,7 +5,9 @@ import asyncclick as click
 import httpx
 import pytest
 
-from httpcli.commands.helpers import guess_lexer_name, get_response_headers_text, print_response, perform_read_request
+from httpcli.commands.helpers import (
+    guess_lexer_name, get_response_headers_text, print_response, perform_read_request, perform_write_request
+)
 from httpcli.configuration import Configuration
 
 
@@ -101,7 +103,7 @@ class TestPerformReadRequest:
 
         with pytest.raises(click.Abort):
             # noinspection PyTypeChecker
-            await perform_read_request(method, 'https://example.com', Configuration(), tuple(), tuple(), [])
+            await perform_read_request(method, 'https://example.com', Configuration())
 
         assert capsys.readouterr().out == 'the request timeout has expired\n'
 
@@ -111,16 +113,72 @@ class TestPerformReadRequest:
 
         with pytest.raises(click.Abort):
             # noinspection PyTypeChecker
-            await perform_read_request(method, 'https://example.com', Configuration(), tuple(), tuple(), [])
+            await perform_read_request(method, 'https://example.com', Configuration())
 
         assert capsys.readouterr().out == 'unexpected error: just a test error\n'
 
     # this is not a realistic example, but just prove the function works as expected
     @pytest.mark.parametrize('method', ['GET', 'HEAD', 'OPTIONS', 'DELETE'])
     async def test_should_print_response_given_correct_input(self, capsys, respx_mock, method):
-        respx_mock.route(method=method, host='example.com') % dict(json={'hello': 'world'})
+        cookies = headers = params = [('foo', 'bar')]
+        respx_mock.route(
+            method=method, host='example.com', cookies=cookies, headers=headers, params=params
+        ) % dict(json={'hello': 'world'})
         # noinspection PyTypeChecker
-        await perform_read_request(method, 'https://example.com', Configuration(), tuple(), tuple(), [])
+        await perform_read_request(method, 'https://example.com', Configuration(), headers, params, cookies)
+
+        output = capsys.readouterr().out
+        lines = [
+            'HTTP/1.1 200 OK',
+            'content-length: 18',
+            'content-type: application/json',
+            '{',
+            'hello',
+            'world',
+            '}'
+        ]
+        for line in lines:
+            assert line in output
+
+
+class TestPerformWriteRequest:
+    """Tests function perform_write_request"""
+
+    @pytest.mark.parametrize('method', ['POST', 'PATCH', 'PUT'])
+    async def test_should_raise_error_when_request_timeout_expired(self, capsys, respx_mock, autojump_clock, method):
+        async def side_effect(_):
+            await anyio.sleep(6)
+
+        respx_mock.route(method=method, host='example.com').side_effect = side_effect
+
+        with pytest.raises(click.Abort):
+            # noinspection PyTypeChecker
+            await perform_write_request(method, 'https://example.com', Configuration())
+
+        assert capsys.readouterr().out == 'the request timeout has expired\n'
+
+    @pytest.mark.parametrize('method', ['POST', 'PATCH', 'PUT'])
+    async def test_should_raise_click_error_when_unexpected_httpx_error_happens(self, capsys, respx_mock, method):
+        respx_mock.route(method=method, host='example.com').side_effect = httpx.TransportError('just a test error')
+
+        with pytest.raises(click.Abort):
+            # noinspection PyTypeChecker
+            await perform_write_request(method, 'https://example.com', Configuration())
+
+        assert capsys.readouterr().out == 'unexpected error: just a test error\n'
+
+    @pytest.mark.parametrize('method', ['POST', 'PATCH', 'PUT'])
+    @pytest.mark.parametrize(('mock_argument', 'request_argument'), [
+        ({'data': {'foo': 'bar'}}, {'form': [('foo', 'bar')]}),
+        ({'json': {'foo': 'bar'}}, {'json_data': [('foo', 'bar')]}),
+        ({'content': b'hello'}, {'raw': b'hello'})
+    ])
+    async def test_should_print_response_given_correct_input(
+            self, capsys, respx_mock, method, mock_argument, request_argument
+    ):
+        respx_mock.route(method=method, host='example.com', **mock_argument) % dict(json={'hello': 'world'})
+        # noinspection PyTypeChecker
+        await perform_write_request(method, 'https://example.com', Configuration(), **request_argument)
 
         output = capsys.readouterr().out
         lines = [
