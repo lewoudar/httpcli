@@ -10,7 +10,6 @@ from .models import BasicAuth, DigestAuth, OAuth2PasswordBearer
 class Configuration(BaseSettings):
     proxy: Optional[AnyHttpUrl] = None
     version: Literal['h1', 'h2'] = 'h1'
-    backend: Literal['trio', 'asyncio', 'uvloop'] = 'trio'
     auth: Optional[Union[BasicAuth, DigestAuth, OAuth2PasswordBearer]] = None
     follow_redirects: bool = True
     verify: Union[bool, FilePath] = True

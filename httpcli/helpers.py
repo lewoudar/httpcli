@@ -91,7 +91,6 @@ def set_configuration_options(
         config: Configuration,
         proxy: Optional[pydantic.AnyHttpUrl] = None,
         http_version: Optional[str] = None,
-        backend: Optional[str] = None,
         auth: Optional[Auth] = None,
         follow_redirects: Optional[bool] = None,
         timeout: Optional[float] = None,
@@ -99,9 +98,6 @@ def set_configuration_options(
 ) -> None:
     if http_version is not None:
         config.version = http_version
-
-    if backend is not None:
-        config.backend = backend
 
     if proxy is not None:
         config.proxy = proxy

@@ -92,13 +92,13 @@ class TestBuildHttpPropertyArguments:
 BAD_YAML_DATA = """
 httpcli:
   timeout: 2
-  backend: foo
+  version: h4
 """
 
 CORRECT_YAML_DATA = """
 httpcli:
   timeout: 2
-  backend: asyncio
+  version: h2
 """
 
 
@@ -112,7 +112,7 @@ class TestLoadConfigFromYaml:
             with config_file.open() as f:
                 load_config_from_yaml(f)
 
-        assert 'backend' in str(exc_info.value)
+        assert 'version' in str(exc_info.value)
 
     def test_should_return_correct_configuration_given_correct_configuration_file(self, tmp_path):
         config_file = tmp_path / 'config.yaml'
@@ -120,7 +120,7 @@ class TestLoadConfigFromYaml:
         with config_file.open() as f:
             config = load_config_from_yaml(f)
             assert config.timeout == 2
-            assert config.backend == 'asyncio'
+            assert config.version == 'h2'
 
 
 class TestGetOauth2BearerToken:

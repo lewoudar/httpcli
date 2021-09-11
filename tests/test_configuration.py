@@ -10,7 +10,6 @@ def test_default_configuration():
     config = Configuration()
     assert config.proxy is None
     assert config.version == 'h1'
-    assert config.backend == 'trio'
     assert config.auth is None
     assert config.follow_redirects is True
     assert config.verify is True

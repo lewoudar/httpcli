@@ -20,13 +20,6 @@ def http_version_option(f: FC) -> FC:
     )(f)
 
 
-def backend_option(f: FC) -> FC:
-    return click.option(
-        '--backend', type=click.Choice(['trio', 'asyncio', 'uvloop']),
-        help='internal asynchronous backend used',
-    )(f)
-
-
 def auth_option(f: FC) -> FC:
     return click.option('--auth', type=AUTH_PARAM, help='a json string representing authentication information')(f)
 
@@ -58,8 +51,7 @@ def config_file_option(f: FC) -> FC:
 
 def global_cli_options(f: FC) -> FC:
     options = [
-        proxy_option, http_version_option, backend_option, auth_option, follow_redirects_option, timeout_option,
-        config_file_option
+        proxy_option, http_version_option, auth_option, follow_redirects_option, timeout_option, config_file_option
     ]
     for callable_option in options:
         f = callable_option(f)

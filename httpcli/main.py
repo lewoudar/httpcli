@@ -19,7 +19,7 @@ def http(
         context: click.Context,
         proxy: AnyHttpUrl,
         http_version: str,
-        backend: str, auth: Auth,
+        auth: Auth,
         follow_redirects: bool,
         timeout: float,
         config_file: TextIO
@@ -31,7 +31,7 @@ def http(
         context.obj = config
         return
     config = context.ensure_object(Configuration)
-    set_configuration_options(config, proxy, http_version, backend, auth, follow_redirects, timeout, verify=False)
+    set_configuration_options(config, proxy, http_version, auth, follow_redirects, timeout, verify=False)
 
 
 # add subcommands
