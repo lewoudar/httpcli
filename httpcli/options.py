@@ -115,3 +115,10 @@ def raw_payload_option(f: FC) -> FC:
         type=RAW_PAYLOAD,
         help='Raw data passed to the request. It cannot be used with --json and --form options.'
     )(f)
+
+
+def http_write_options(f: FC) -> FC:
+    for option in [form_option, json_option, raw_payload_option]:
+        f = option(f)
+
+    return f
