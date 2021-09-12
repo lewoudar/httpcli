@@ -104,7 +104,16 @@ async def build_write_method_arguments(
         )
 
     if form:
-        arguments['data'] = dict(form)
+        data = {}
+        files = {}
+        for key, value in form:
+            if value.startswith('@'):
+                files[key] = open(value[1:], 'rb')
+            else:
+                data[key] = value
+        arguments['data'] = data
+        arguments['files'] = files
+
     if json_data:
         arguments['json'] = dict(json_data)
     if raw:

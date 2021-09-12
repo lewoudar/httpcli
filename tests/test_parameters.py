@@ -4,7 +4,7 @@ import asyncclick as click
 import pytest
 
 from httpcli.models import BasicAuth
-from httpcli.parameters import AUTH_PARAM, URL, QUERY, HEADER, COOKIE, JSON, RAW_PAYLOAD
+from httpcli.parameters import AUTH_PARAM, URL, QUERY, HEADER, COOKIE, JSON, FORM, RAW_PAYLOAD
 
 
 @click.command()
@@ -27,6 +27,12 @@ def debug_http_param(header, cookie, query):
     click.echo(header)
     click.echo(cookie)
     click.echo(query)
+
+
+@click.command()
+@click.option('-f', '--form', type=FORM)
+def debug_form_param(form):
+    click.echo(form)
 
 
 @click.command()
@@ -96,6 +102,37 @@ class TestHttpParam:
 
         assert result.exit_code == 0
         assert result.output == f'{("foo", "bar")}\n' * 3
+
+
+class TestFormParam:
+    """Tests FormParam class"""
+
+    @pytest.mark.parametrize('value', ['a', 'a:b:c'])
+    async def test_should_print_error_when_param_is_badly_formed(self, runner, value):
+        result = await runner.invoke(debug_form_param, ['-f', value])
+
+        assert result.exit_code == 2
+        assert f'{value} is not in the form key:value' in result.output
+
+    async def test_should_print_error_when_given_file_does_not_exist(self, runner):
+        result = await runner.invoke(debug_form_param, ['-f', 'foo:@foo.txt'])
+
+        assert result.exit_code == 2
+        assert 'foo.txt file does not exist' in result.output
+
+    async def test_should_print_correct_value_when_given_correct_filename(self, runner, tmp_path):
+        path = tmp_path / 'file.txt'
+        path.write_text('just a test file')
+        result = await runner.invoke(debug_form_param, ['-f', f'foo:@{path}'])
+
+        assert result.exit_code == 0
+        assert result.output == str(('foo', f'@{path}')) + '\n'
+
+    async def test_should_print_correct_value_when_given_correct_input(self, runner):
+        result = await runner.invoke(debug_form_param, ['-f', 'foo:bar'])
+
+        assert result.exit_code == 0
+        assert result.output == str(('foo', 'bar')) + '\n'
 
 
 class TestJsonParam:

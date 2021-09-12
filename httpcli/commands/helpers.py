@@ -106,7 +106,10 @@ async def perform_write_request(
         raw: Optional[bytes] = None
 ):
     arguments = await build_write_method_arguments(config, headers, cookies, query_params, form, json_data, raw)
-    method_arguments = {'allow_redirects': arguments.pop('allow_redirects')}
+    method_arguments = {
+        'allow_redirects': arguments.pop('allow_redirects'),
+        'files': arguments.pop('files', {})
+    }
     for item in ['data', 'json', 'content']:
         if item in arguments:
             method_arguments[item] = arguments.pop(item)

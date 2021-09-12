@@ -63,18 +63,27 @@ class HeaderParam(HTTPParameter):
 class FormParam(HTTPParameter):
     name = 'form'
 
+    def convert(
+            self, value: str, param: t.Optional[click.Parameter], ctx: t.Optional[click.Context]
+    ) -> t.Tuple[str, str]:
+        field_name, field_value = super().convert(value, param, ctx)
 
-class JsonParam(click.ParamType):
+        if field_value.startswith('@'):
+            path = Path(field_value[1:])
+            if not path.is_file():
+                self.fail(f'{field_value[1:]} file does not exist')
+
+        return field_name, field_value
+
+
+class JsonParam(HTTPParameter):
     name = 'json'
 
     def convert(
             self, value: str, param: t.Optional[click.Parameter], ctx: t.Optional[click.Context]
     ) -> t.Tuple[str, str]:
-        parts = value.split(':')
-        if len(parts) != 2:
-            self.fail(f'{value} is not in the form key:value')
+        field_name, field_value = super().convert(value, param, ctx)
 
-        field_name, field_value = parts
         if field_value.startswith('@'):
             path = Path(field_value[1:])
             if not path.is_file():

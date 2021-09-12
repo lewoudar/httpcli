@@ -228,11 +228,17 @@ class TestBuildWriteMethodArguments:
         message = 'you cannot mix different types of data, you must choose between one between form, json or raw'
         assert message == str(exc_info.value)
 
-    async def test_should_return_form_dict_when_given_form_info_as_input(self):
-        form = (('foo', 'bar'),)
+    async def test_should_return_data_dict_and_files_info_when_given_form_info_as_input(self, tmp_path):
+        path = tmp_path / 'file.txt'
+        message = 'just a text file'
+        path.write_text('just a text file')
+        form = (('foo', 'bar'), ('file', f'@{path}'))
         arguments = await build_write_method_arguments(Configuration(), form=form)
 
-        assert arguments['data'] == dict(form)
+        assert arguments['data'] == {'foo': 'bar'}
+        files = arguments['files']
+        assert len(files) == 1
+        assert files['file'].read() == message.encode()
 
     async def test_should_return_json_dict_when_given_json_data_as_input(self):
         json_data = (('foo', 'bar'),)

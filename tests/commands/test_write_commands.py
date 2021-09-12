@@ -11,7 +11,7 @@ async def test_should_print_delete_response_in_normal_cases(runner, respx_mock):
     assert 'HTTP/1.1 204 No Content' in result.output
 
 
-@pytest.mark.parametrize('method', ['POST', 'PATCH', 'PUT'])
+@pytest.mark.parametrize('method', ['POST'])
 @pytest.mark.parametrize(('mock_argument', 'cli_argument'), [
     ({'data': {'foo': 'bar', 'hello': 'world'}}, ['-f', 'foo:bar', '-f', 'hello:world']),
     ({'json': {'foo': 'bar', 'hello': 'world'}}, ['-j', 'foo:bar', '-j', 'hello:world']),
