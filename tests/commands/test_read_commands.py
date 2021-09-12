@@ -1,12 +1,15 @@
 import httpx
+import pytest
 
-from httpcli.main import http
+from httpcli.http import http
+from httpcli.https import https
 
 
-async def test_should_get_print_response_in_normal_cases(runner, respx_mock):
+@pytest.mark.parametrize('command', [http, https])
+async def test_should_get_print_response_in_normal_cases(runner, respx_mock, command):
     data = '<p>Hello world</p>'
     respx_mock.get('https://example.com') % httpx.Response(status_code=200, html=data)
-    result = await runner.invoke(http, ['get', 'https://example.com'])
+    result = await runner.invoke(command, ['get', 'https://example.com'])
 
     assert result.exit_code == 0
     output = result.output
@@ -16,14 +19,15 @@ async def test_should_get_print_response_in_normal_cases(runner, respx_mock):
     assert 'world</p>' in output
 
 
-async def test_should_print_head_response_in_normal_cases(runner, respx_mock):
+@pytest.mark.parametrize('command', [http, https])
+async def test_should_print_head_response_in_normal_cases(runner, respx_mock, command):
     headers = {
         'content-encoding': 'gzip',
         'accept-ranges': 'bytes',
         'content-length': '648'
     }
     respx_mock.head('https://example.com') % httpx.Response(status_code=200, headers=headers)
-    result = await runner.invoke(http, ['head', 'https://example.com'])
+    result = await runner.invoke(command, ['head', 'https://example.com'])
 
     assert result.exit_code == 0
     output = result.output
@@ -33,14 +37,15 @@ async def test_should_print_head_response_in_normal_cases(runner, respx_mock):
     assert 'content-length: 648' in output
 
 
-async def test_should_print_options_response_in_normal_cases(runner, respx_mock):
+@pytest.mark.parametrize('command', [http, https])
+async def test_should_print_options_response_in_normal_cases(runner, respx_mock, command):
     headers = {
         'allow': 'OPTIONS, GET, HEAD, POST',
         'content-type': 'text/html; charset=utf-8',
         'server': 'EOS (vny/0452)'
     }
     respx_mock.options('https://example.com') % httpx.Response(status_code=200, headers=headers)
-    result = await runner.invoke(http, ['options', 'https://example.com'])
+    result = await runner.invoke(command, ['options', 'https://example.com'])
 
     assert result.exit_code == 0
     output = result.output

@@ -1,12 +1,14 @@
 import httpx
 import pytest
 
-from httpcli.main import http
+from httpcli.http import http
+from httpcli.https import https
 
 
-async def test_should_print_delete_response_in_normal_cases(runner, respx_mock):
+@pytest.mark.parametrize('command', [http, https])
+async def test_should_print_delete_response_in_normal_cases(runner, respx_mock, command):
     respx_mock.delete('https://foo.com') % 204
-    result = await runner.invoke(http, ['delete', 'https://foo.com'])
+    result = await runner.invoke(command, ['delete', 'https://foo.com'])
 
     assert result.exit_code == 0
     assert 'HTTP/1.1 204 No Content' in result.output
@@ -18,9 +20,10 @@ async def test_should_print_delete_response_in_normal_cases(runner, respx_mock):
     ({'json': {'foo': 'bar', 'hello': 'world'}}, ['-j', 'foo:bar', '-j', 'hello:world']),
     ({'content': b'pineapple'}, ['-r', 'pineapple'])
 ])
-async def test_should_print_response_in_normal_cases(runner, respx_mock, method, mock_argument, cli_argument):
+@pytest.mark.parametrize('command', [http, https])
+async def test_should_print_response_in_normal_cases(runner, respx_mock, method, mock_argument, cli_argument, command):
     respx_mock.route(method=method, host='pie.dev', **mock_argument) % dict(json={'hello': 'world'})
-    result = await runner.invoke(http, [method.lower(), 'https://pie.dev', *cli_argument])
+    result = await runner.invoke(command, [method.lower(), 'https://pie.dev', *cli_argument])
 
     assert result.exit_code == 0
     output = result.output
@@ -37,7 +40,8 @@ async def test_should_print_response_in_normal_cases(runner, respx_mock, method,
 
 
 @pytest.mark.parametrize('method', ['POST', 'PUT', 'PATCH'])
-async def test_should_print_response_when_sending_file(runner, tmp_path, respx_mock, method):
+@pytest.mark.parametrize('command', [http, https])
+async def test_should_print_response_when_sending_file(runner, tmp_path, respx_mock, method, command):
     async def side_effect(request: httpx.Request) -> httpx.Response:
         assert request.headers['content-type'].startswith('multipart/form-data')
         return httpx.Response(200, json={'hello': 'world'})
@@ -45,7 +49,7 @@ async def test_should_print_response_when_sending_file(runner, tmp_path, respx_m
     path = tmp_path / 'file.txt'
     path.write_text('hello')
     respx_mock.route(method=method, host='pie.dev').mock(side_effect=side_effect)
-    result = await runner.invoke(http, [method.lower(), 'https://pie.dev', '-f', f'file:@{path}'])
+    result = await runner.invoke(command, [method.lower(), 'https://pie.dev', '-f', f'file:@{path}'])
 
     assert result.exit_code == 0
     output = result.output

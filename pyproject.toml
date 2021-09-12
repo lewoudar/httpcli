@@ -30,7 +30,8 @@ pytest-mock = "^3.6.1"
 mock = "^4.0.3"
 
 [tool.poetry.scripts]
-http = "httpcli.main:http"
+http = "httpcli.http:http"
+https = "httpcli.https:https"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

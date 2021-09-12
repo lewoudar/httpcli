@@ -129,7 +129,7 @@ def set_configuration_options(
         auth: Optional[Auth] = None,
         follow_redirects: Optional[bool] = None,
         timeout: Optional[float] = None,
-        verify: Optional[Union[bool, Path]] = True
+        verify: Optional[Union[bool, str]] = True
 ) -> None:
     if http_version is not None:
         config.version = http_version
