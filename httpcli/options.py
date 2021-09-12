@@ -9,19 +9,19 @@ FC = TypeVar("FC", Callable[..., Any], click.Command)
 
 
 def proxy_option(f: FC) -> FC:
-    return click.option('--proxy', type=URL, help='proxy url')(f)
+    return click.option('--proxy', type=URL, help='Proxy url.')(f)
 
 
 def http_version_option(f: FC) -> FC:
     return click.option(
         '--http-version',
         type=click.Choice(['h1', 'h2']),
-        help='version of http used to make the request',
+        help='Version of http used to make the request.',
     )(f)
 
 
 def auth_option(f: FC) -> FC:
-    return click.option('--auth', type=AUTH_PARAM, help='a json string representing authentication information')(f)
+    return click.option('--auth', type=AUTH_PARAM, help='A json string representing authentication information.')(f)
 
 
 def follow_redirects_option(f: FC) -> FC:
@@ -36,7 +36,7 @@ def timeout_option(f: FC) -> FC:
     return click.option(
         '-t', '--timeout',
         type=float,
-        help='time for request to complete, a negative value means there is no timeout'
+        help='Time for request to complete, a negative value means there is no timeout.'
     )(f)
 
 
@@ -45,7 +45,7 @@ def config_file_option(f: FC) -> FC:
         '--config-file',
         type=click.File(),
         help='A configuration file with options used to set the cli. '
-             'Note that the file takes precedence over the other options'
+             'Note that the file takes precedence over the other options.'
     )(f)
 
 
@@ -63,7 +63,7 @@ def query_option(f: FC) -> FC:
         '-q', '--query', 'query_params',
         type=QUERY,
         multiple=True,
-        help='querystring argument passed to the request, can by passed multiple times'
+        help='Querystring argument passed to the request, can by passed multiple times.'
     )(f)
 
 
@@ -72,7 +72,7 @@ def header_option(f: FC) -> FC:
         '-H', '--header', 'headers',
         type=HEADER,
         multiple=True,
-        help='header passed to the request, can by passed multiple times'
+        help='Header passed to the request, can by passed multiple times.'
     )(f)
 
 
@@ -81,7 +81,7 @@ def cookie_option(f: FC) -> FC:
         '-c', '--cookie', 'cookies',
         type=COOKIE,
         multiple=True,
-        help='cookie passed to the request, can by passed multiple times'
+        help='Cookie passed to the request, can by passed multiple times.'
     )(f)
 
 
@@ -96,7 +96,7 @@ def form_option(f: FC) -> FC:
         '-f', '--form',
         type=FORM,
         multiple=True,
-        help='form data passed to the request, can be passed multiple times'
+        help='Form data passed to the request, can be passed multiple times.'
     )(f)
 
 
@@ -105,7 +105,7 @@ def json_option(f: FC) -> FC:
         '-j', '--json', 'json_data',
         type=JSON,
         multiple=True,
-        help='json data passed to the request, can be passed multiple times'
+        help='Json data passed to the request, can be passed multiple times.'
     )(f)
 
 

@@ -17,7 +17,7 @@ from .version import __version__
 @global_cli_options
 @click.option(
     '--cert',
-    help='path to certificate used to authenticate hosts',
+    help='Path to certificate used to authenticate hosts.',
     type=click.Path(exists=True, dir_okay=False)
 )
 @click.pass_context

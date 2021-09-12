@@ -37,6 +37,11 @@ async def post(
         json_data: HttpProperty,
         raw: bytes
 ):
+    """
+    Performs http POST request.
+
+    URL is the target url.
+    """
     await perform_write_request('POST', str(url), config, headers, query_params, cookies, form, json_data, raw)
 
 
@@ -54,6 +59,11 @@ async def patch(
         json_data: HttpProperty,
         raw: bytes
 ):
+    """
+    Performs http PATCH request.
+
+    URL is the target url.
+    """
     await perform_write_request('PATCH', str(url), config, headers, query_params, cookies, form, json_data, raw)
 
 
@@ -71,4 +81,9 @@ async def put(
         json_data: HttpProperty,
         raw: bytes
 ):
+    """
+    Performs http PUT request.
+
+    URL is the target url.
+    """
     await perform_write_request('PUT', str(url), config, headers, query_params, cookies, form, json_data, raw)
