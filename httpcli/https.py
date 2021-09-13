@@ -3,6 +3,7 @@ from typing import TextIO
 import asyncclick as click
 from pydantic import AnyHttpUrl
 
+from .commands.download import download
 from .commands.read_commands import get, head, options
 from .commands.write_commands import delete, post, put, patch
 from .configuration import Configuration
@@ -44,5 +45,5 @@ def https(
 
 
 # add subcommands
-for command in [get, post, put, patch, delete, head, options]:
+for command in [get, post, put, patch, delete, head, options, download]:
     https.add_command(command)  # type: ignore

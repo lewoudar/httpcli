@@ -35,7 +35,7 @@ https = "httpcli.https:https"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# addopts = "--cov=httpcli --cov-report html --cov-report xml"
+addopts = "--cov=httpcli --cov-report html --cov-report xml"
 trio_mode = true
 
 [build-system]
