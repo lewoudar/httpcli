@@ -74,15 +74,19 @@ async def download_file(
         progress: Progress,
         task_id: TaskID
 ) -> None:
-    response = await client.get(url, allow_redirects=allow_redirects)
-    filename = get_filename(response)
-    if response.status_code >= 300:  # we take in account cases where users deny redirects
-        progress.console.print(f':cross_mark: {url} ({filename})')
-        progress.update(task_id, advance=1)
-    else:
-        path = destination / filename
-        path.write_bytes(response.content)
-        progress.console.print(f':white_heavy_check_mark: {url} ({filename})')
+    try:
+        response = await client.get(url, allow_redirects=allow_redirects)
+        filename = get_filename(response)
+        if response.status_code >= 300:  # we take in account cases where users deny redirects
+            progress.console.print(f':cross_mark: {url} ({filename})')
+            progress.update(task_id, advance=1)
+        else:
+            path = destination / filename
+            path.write_bytes(response.content)
+            progress.console.print(f':white_heavy_check_mark: {url} ({filename})')
+            progress.update(task_id, advance=1)
+    except httpx.HTTPError as e:
+        progress.console.print(f'[error]unable to fetch {url}, reason: {e}')
         progress.update(task_id, advance=1)
 
 

@@ -115,11 +115,22 @@ class TestDownloadCommand:
     ):
         respx_mock.route(method='GET', host='images.com') % status_code
         url = 'https://images.com/image.png'
-        result = await runner.invoke(command, ['download', 'https://images.com/image.png', '-d', f'{tmp_path}'])
+        result = await runner.invoke(command, ['download', url, '-d', f'{tmp_path}'])
 
         assert result.exit_code == 0
         output = result.output
         assert f'❌ {url} (image.png)\n' in output
+        assert 'Downloading ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00Downloads completed! 🌟\n' in output
+
+    @pytest.mark.parametrize('command', [http, https])
+    async def test_should_print_error_when_unexpected_error_happens(self, runner, respx_mock, tmp_path, command):
+        respx_mock.route(method='GET', host='images.com').mock(side_effect=httpx.TransportError('boom!'))
+        url = 'https://images.com/image.png'
+        result = await runner.invoke(command, ['download', url, '-d', f'{tmp_path}'])
+
+        assert result.exit_code == 0
+        output = result.output
+        assert f'unable to fetch {url}, reason: boom!\n' in output
         assert 'Downloading ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00Downloads completed! 🌟\n' in output
 
     @pytest.mark.parametrize('command', [http, https])
