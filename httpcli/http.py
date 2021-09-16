@@ -5,6 +5,7 @@ from pydantic import AnyHttpUrl
 
 from .commands.download import download
 from .commands.read_commands import get, head, options
+from .commands.sse import sse
 from .commands.write_commands import delete, post, put, patch
 from .configuration import Configuration
 from .helpers import load_config_from_yaml, set_configuration_options
@@ -37,5 +38,5 @@ def http(
 
 
 # add subcommands
-for command in [get, post, put, patch, delete, head, options, download]:
+for command in [get, post, put, patch, delete, head, options, download, sse]:
     http.add_command(command)  # type: ignore

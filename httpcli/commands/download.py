@@ -76,7 +76,7 @@ async def download_file(
 ) -> None:
     response = await client.get(url, allow_redirects=allow_redirects)
     filename = get_filename(response)
-    if response.status_code >= 300:  # we take in account cases where uses deny redirects
+    if response.status_code >= 300:  # we take in account cases where users deny redirects
         progress.console.print(f':cross_mark: {url} ({filename})')
         progress.update(task_id, advance=1)
     else:
@@ -99,6 +99,8 @@ async def download_file(
 )
 @click.argument('url', type=URL, nargs=-1)
 @click.pass_obj
+# well, technically url is not a str but a pydantic.AnyHttpUrl object inheriting from str
+# but it does not seem to bother httpx, so we can use the convenient str for signature
 async def download(config: Configuration, destination: str, file: IO[str], url: Tuple[str, ...]):
     """
     Process download of urls given as arguments.

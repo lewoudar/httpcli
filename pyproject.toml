@@ -28,6 +28,7 @@ respx = "^0.17.1"
 pytest-cov = "^2.12.1"
 pytest-mock = "^3.6.1"
 mock = "^4.0.3"
+uvicorn = "^0.15.0"
 
 [tool.poetry.scripts]
 http = "httpcli.http:http"

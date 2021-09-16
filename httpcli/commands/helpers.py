@@ -38,10 +38,14 @@ def print_delimiter() -> None:
     console.print(syntax)
 
 
-def print_response(response: httpx.Response) -> None:
+def print_response_headers(response: httpx.Response) -> None:
     http_headers = get_response_headers_text(response)
     syntax = Syntax(http_headers, 'http')
     console.print(syntax)
+
+
+def print_response(response: httpx.Response) -> None:
+    print_response_headers(response)
     print_delimiter()
     lexer = guess_lexer_name(response)
     if lexer:

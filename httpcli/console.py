@@ -4,6 +4,7 @@ from rich.theme import Theme
 
 custom_theme = Theme({
     'error': Style(color='red'),
+    'warning': Style(color='yellow'),
     'info': Style(color='blue')
 })
 
