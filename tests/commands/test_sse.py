@@ -74,17 +74,24 @@ async def test_should_print_correct_output_for_json_data(runner, respx_mock, com
     assert 'HTTP/1.1 200 OK' in output
     assert 'content-type: text/event-stream' in output
     assert 'event: number' in output
+    assert '{' in output
+    assert '"number"' in output
+    assert '}' in output
     for i in range(1, 6):
-        assert 'data: {"number": ' + str(i) + '}' in output
+        assert str(i) in output
 
 
 @command_parametrize
-async def test_should_print_correct_output_for_non_json_data(runner, respx_mock, command):
+@pytest.mark.parametrize(('data', 'expected_output'), [
+    (b'data: hello world\n', 'hello world'),
+    (b'hello world\n', 'hello world')
+])
+async def test_should_print_correct_output_for_non_json_data(runner, respx_mock, command, data, expected_output):
     class HelloStream(httpx.AsyncByteStream):
 
         async def __aiter__(self) -> AsyncIterator[bytes]:
             yield b'event: hello\n'
-            yield b'data: "hello world"\n'
+            yield data
             yield b'\n\n'
 
     url = 'https://foo.com/sse'
@@ -97,4 +104,4 @@ async def test_should_print_correct_output_for_non_json_data(runner, respx_mock,
     assert 'HTTP/1.1 200 OK' in output
     assert 'content-type: text/event-stream' in output
     assert 'event: hello' in output
-    assert 'data: "hello world"' in output
+    assert expected_output in output
