@@ -1,29 +1,20 @@
 import json
 import re
 
+import anyio
 import asyncclick as click
 import httpx
 from rich.markup import escape
 from rich.syntax import Syntax
 
-from httpcli.commands.helpers import print_response_headers
+from httpcli.commands.helpers import print_response_headers, function_runner, signal_handler
 from httpcli.configuration import Configuration
 from httpcli.console import console
 from httpcli.helpers import build_base_httpx_arguments
 from httpcli.parameters import URL
 
 
-@click.command()
-@click.argument('url', type=URL)
-@click.pass_obj
-# well, technically url is not a str but a pydantic.AnyHttpUrl object inheriting from str
-# but it does not seem to bother httpx, so we can use the convenient str for signature
-async def sse(config: Configuration, url: str):
-    """
-    Reads and print SSE events on a given url.
-
-    URL is the url where SSE events will be read.
-    """
+async def handle_sse(config: Configuration, url: str) -> None:
     event_regex = re.compile(r'event:\s*(.+)')
     data_regex = re.compile(r'data:\s*(.+)')
     arguments = build_base_httpx_arguments(config)
@@ -66,3 +57,19 @@ async def sse(config: Configuration, url: str):
     except httpx.HTTPError as e:
         console.print(f'[error]unexpected error: {e}')
         raise click.Abort()
+
+
+@click.command()
+@click.argument('url', type=URL)
+@click.pass_obj
+# well, technically url is not a str but a pydantic.AnyHttpUrl object inheriting from str
+# but it does not seem to bother httpx, so we can use the convenient str for signature
+async def sse(config: Configuration, url: str):
+    """
+    Reads and print SSE events on a given url.
+
+    URL is the url where SSE events will be read.
+    """
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(function_runner, tg.cancel_scope, handle_sse, config, url)
+        tg.start_soon(signal_handler, tg.cancel_scope)

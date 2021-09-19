@@ -1,5 +1,6 @@
 import json
-from typing import Dict, Any, Optional
+import signal
+from typing import Dict, Any, Optional, Callable
 
 import anyio
 import asyncclick as click
@@ -120,3 +121,22 @@ async def perform_write_request(
             break
 
     await _perform_request(method, url, config, arguments, method_arguments)
+
+
+async def signal_handler(scope: anyio.CancelScope) -> None:
+    with anyio.open_signal_receiver(signal.SIGINT, signal.SIGTERM) as signals:
+        async for signum in signals:
+            if signum == signal.SIGINT:
+                console.print('[info]Program was interrupted by Ctrl+C, good bye! :waving_hand:')
+            else:
+                console.print('[info]Program was interrupted by the SIGTERM signal, good bye! :waving_hand:')
+
+            # noinspection PyAsyncCall
+            scope.cancel()
+            return
+
+
+async def function_runner(scope: anyio.CancelScope, function: Callable, *args: Any) -> None:
+    await function(*args)
+    # noinspection PyAsyncCall
+    scope.cancel()

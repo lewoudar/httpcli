@@ -9,6 +9,7 @@ import httpx
 from pydantic import BaseModel, AnyHttpUrl, ValidationError
 from rich.progress import Progress, TaskID
 
+from httpcli.commands.helpers import function_runner, signal_handler
 from httpcli.configuration import Configuration
 from httpcli.console import console
 from httpcli.helpers import build_base_httpx_arguments
@@ -90,6 +91,26 @@ async def download_file(
         progress.update(task_id, advance=1)
 
 
+async def handle_downloads(config: Configuration, destination: str, file: IO[str], url: Tuple[str, ...]) -> None:
+    urls = set(url)
+    if file:
+        other_urls = get_urls_from_file(file)
+        urls = urls.union(other_urls)
+
+    destination = Path(destination) if destination else Path.cwd()
+    arguments = build_base_httpx_arguments(config)
+    allow_redirects = arguments.pop('allow_redirects')
+
+    with Progress(console=console) as progress:
+        task_id = progress.add_task('Downloading', total=len(urls))
+        async with httpx.AsyncClient(**arguments) as client:
+            async with anyio.create_task_group() as tg:
+                for url in urls:
+                    tg.start_soon(download_file, client, url, allow_redirects, destination, progress, task_id)
+
+    console.print('[info]Downloads completed! :glowing_star:')
+
+
 @click.command()
 @click.option(
     '-d', '--destination',
@@ -113,20 +134,6 @@ async def download(config: Configuration, destination: str, file: IO[str], url: 
 
     You can combine url arguments with --file option.
     """
-    urls = set(url)
-    if file:
-        other_urls = get_urls_from_file(file)
-        urls = urls.union(other_urls)
-
-    destination = Path(destination) if destination else Path.cwd()
-    arguments = build_base_httpx_arguments(config)
-    allow_redirects = arguments.pop('allow_redirects')
-
-    with Progress(console=console) as progress:
-        task_id = progress.add_task('Downloading', total=len(urls))
-        async with httpx.AsyncClient(**arguments) as client:
-            async with anyio.create_task_group() as tg:
-                for url in urls:
-                    tg.start_soon(download_file, client, url, allow_redirects, destination, progress, task_id)
-
-    console.print('[info]Downloads completed! :glowing_star:')
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(function_runner, tg.cancel_scope, handle_downloads, config, destination, file, url)
+        tg.start_soon(signal_handler, tg.cancel_scope)
