@@ -8,6 +8,7 @@ from .commands.read_commands import get, head, options
 from .commands.sse import sse
 from .commands.write_commands import delete, post, put, patch
 from .configuration import Configuration
+from .did_you_mean import DYMGroup
 from .helpers import load_config_from_yaml, set_configuration_options
 from .models import Auth
 from .options import global_cli_options
@@ -15,7 +16,7 @@ from .version import __version__
 
 
 @click.version_option(__version__, message='%(prog)s version %(version)s')
-@click.group()
+@click.group(cls=DYMGroup)
 @global_cli_options
 @click.option(
     '--cert',
