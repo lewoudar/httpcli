@@ -7,7 +7,6 @@ import shellingham
 from httpcli.console import console
 
 SHELLS = ['bash', 'zsh', 'fish']
-COMPLETION_DIR = '.cli_completions'
 
 
 def install_bash_zsh(bash: bool = True) -> None:
